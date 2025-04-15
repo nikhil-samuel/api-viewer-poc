@@ -4,8 +4,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'API Viewer POC',
-  description: 'Monitor API requests between BGLA and Qantev',
+  title: 'Claims API Viewer',
+  description: 'Monitor claim submissions from BGLA',
 }
 
 export default function RootLayout({ children }) {
@@ -14,8 +14,8 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <header className="bg-blue-600 text-white p-4">
           <div className="container mx-auto">
-            <h1 className="text-xl font-bold">API Viewer</h1>
-            <p className="text-sm">BGLA Integration Monitoring</p>
+            <h1 className="text-xl font-bold">Claims API Viewer</h1>
+            <p className="text-sm">BGLA Integration</p>
           </div>
         </header>
         <main className="container mx-auto p-4">
