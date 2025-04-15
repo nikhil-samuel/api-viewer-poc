@@ -1,18 +1,17 @@
-# API Viewer POC
+# API Viewer POC - Claims Submission Monitor
 
-A proof of concept for an API Viewer to monitor claims submissions from BGLA (Bupa Global Latin America).
+A minimal proof of concept for monitoring claim submissions from BGLA (Bupa Global Latin America).
 
 ## Overview
 
-This application provides a simple interface to monitor API requests between BGLA's portal and Qantev's system, focusing on claims submissions. It allows developers and support staff to view incoming API requests, inspect their content, and monitor the system's responses.
+This application provides a simple interface to view claim submissions from BGLA's portal to Qantev's system. It shows the raw API requests and responses in a straightforward, minimal interface.
 
 ## Features
 
-- View a list of all incoming API requests
-- See detailed request and response data in JSON format
-- Expandable/collapsible views for better readability
-- Basic filtering and sorting capabilities
-- Document metadata display (without rendering document content)
+- List of claim submissions (POST /request)
+- Expandable view to show raw request and response JSON data
+- Basic document attachment information
+- Simple status indication
 
 ## Getting Started
 
@@ -36,32 +35,21 @@ npm run dev
 
 ## Stack
 
-- Next.js 14
+- Next.js
 - React
-- Tailwind CSS for styling
-- Context for state management
+- Tailwind CSS for minimal styling
 
 ## Mock Data
 
-This POC uses mock data to simulate API requests and responses. In a production environment, this would connect to a backend service that logs actual API traffic.
+This POC uses mock data to simulate API requests and responses based on the Swagger specification. In a production environment, this would connect to a backend service that logs actual API traffic between BGLA and Qantev systems.
 
-## Screenshots
+## Design Philosophy
 
-### Main View
-![API Viewer Main View](https://i.imgur.com/qiQJ1Mm.png)
+This POC follows a "Minimum Viable Product" approach, focusing only on:
 
-### Expanded Request with JSON Data
-![Expanded Request View](https://i.imgur.com/CiWTt7k.png)
+1. Showing claim submissions (POST /request endpoint only)
+2. Displaying raw JSON request and response data
+3. Providing just enough context (timestamp, status code)
+4. Indicating document attachments without displaying content
 
-### Document Metadata
-![Document Metadata](https://i.imgur.com/bIjGzLw.png)
-
-## Next Steps
-
-For a production implementation, we would:
-
-1. Connect to a real backend logging service
-2. Add authentication
-3. Implement real-time updates for incoming requests
-4. Add more advanced filtering and search capabilities
-5. Improve document metadata display
+No advanced features, filtering, or complex UI components are included to keep the implementation as simple as possible.
