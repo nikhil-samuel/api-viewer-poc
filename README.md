@@ -39,7 +39,7 @@ npm run dev
 - Next.js 14
 - React
 - Tailwind CSS for styling
-- React JSON View for formatting JSON data
+- Context for state management
 
 ## Mock Data
 
@@ -47,4 +47,21 @@ This POC uses mock data to simulate API requests and responses. In a production 
 
 ## Screenshots
 
-[Coming soon]
+### Main View
+![API Viewer Main View](https://i.imgur.com/qiQJ1Mm.png)
+
+### Expanded Request with JSON Data
+![Expanded Request View](https://i.imgur.com/CiWTt7k.png)
+
+### Document Metadata
+![Document Metadata](https://i.imgur.com/bIjGzLw.png)
+
+## Next Steps
+
+For a production implementation, we would:
+
+1. Connect to a real backend logging service
+2. Add authentication
+3. Implement real-time updates for incoming requests
+4. Add more advanced filtering and search capabilities
+5. Improve document metadata display
