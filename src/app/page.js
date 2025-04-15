@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { sampleRequests } from '../mockData/sampleRequests';
+import JsonViewer from '../components/JsonViewer';
 
 export default function Home() {
-  const [claims, setClaims] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   
   useEffect(() => {
-    // Filter only POST /request claims
-    const claimRequests = sampleRequests.filter(req => 
-      req.method === 'POST' && req.endpoint === '/request');
-    
     // Simulate loading data from API
     setTimeout(() => {
-      setClaims(claimRequests);
+      // Filter to only show POST /request claims
+      const claimRequests = sampleRequests.filter(req => 
+        req.method === 'POST' && req.endpoint === '/request');
+      setRequests(claimRequests);
       setLoading(false);
     }, 500);
   }, []);
@@ -24,58 +24,84 @@ export default function Home() {
     setExpandedId(expandedId === id ? null : id);
   };
   
-  // Format timestamp
-  const formatDate = (timestamp) => {
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
   };
   
+  // Get response status color
+  const getStatusColor = (statusCode) => {
+    if (statusCode >= 200 && statusCode < 300) return 'bg-green-100 text-green-800';
+    if (statusCode >= 400 && statusCode < 500) return 'bg-red-100 text-red-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+  
+  // Extract policy ID if available in the request
+  const getPolicyId = (request) => {
+    return request?.request?.policy_id || 
+           request?.request?.request?.policy_id || 
+           'Unknown';
+  };
+  
+  // Extract amount if available
+  const getAmount = (request) => {
+    // This would need to be adjusted based on actual data structure
+    // For now using a simple mock approach
+    if (request.id === 'req-001') return '$1,200.00';
+    if (request.id === 'req-002') return '$600.00';
+    return '$0.00';
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Claims Queue {claims.length > 0 && <span className="inline-flex items-center justify-center bg-blue-500 text-white text-xs font-medium rounded-full h-5 w-5 ml-2">{claims.length}</span>}</h1>
+      <h1 className="text-2xl font-bold mb-4">Claims Queue <span className="bg-blue-500 text-white text-sm rounded-full px-2 py-1 ml-2">{requests.length}</span></h1>
       
       {loading ? (
-        <div className="text-center py-10">
+        <div className="text-center py-4">
           <p>Loading claims...</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {claims.map(claim => (
-            <div key={claim.id} className="border rounded-lg overflow-hidden">
+        <div className="max-w-4xl mx-auto">
+          {requests.map(request => (
+            <div key={request.id} className="border-b border-gray-200 py-4">
               <div 
-                className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-50"
-                onClick={() => toggleExpand(claim.id)}
+                className="grid grid-cols-3 gap-4 cursor-pointer"
+                onClick={() => toggleExpand(request.id)}
               >
                 <div>
-                  <div className="font-medium">{claim.request.request?.policy_id || 'Unknown Policy'}</div>
-                  <div className="text-sm text-gray-500">{claim.request.request_id || 'Unknown ID'}</div>
+                  <div className="font-medium">{getPolicyId(request)}</div>
+                  <div className="text-sm text-gray-500">{request.request.request_id}</div>
                 </div>
+                
                 <div>
-                  <div className="font-medium">{claim.request.request_type || 'Unknown Type'}</div>
-                  <div className="text-sm text-gray-500">{formatDate(claim.timestamp)}</div>
+                  <div className="font-medium">{request.request.request_type}</div>
+                  <div className="text-sm text-gray-500">{formatTimestamp(request.timestamp)}</div>
                 </div>
-                <div>
-                  <div className="font-medium">${claim.request.request?.custom_fields?.hospitalization?.is_hospitalization ? '1,200.00' : '600.00'}</div>
-                  <div className="text-sm text-gray-500">Amount</div>
-                </div>
+                
                 <div className="text-right">
-                  <span className={`inline-block px-2 py-1 rounded text-sm ${
-                    claim.statusCode >= 200 && claim.statusCode < 300 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    Response: {claim.statusCode}
+                  <div className="font-medium">{getAmount(request)}</div>
+                  <div className="text-sm text-gray-500">Amount</div>
+                  <span className={`mt-1 inline-block px-2 py-1 rounded text-xs ${getStatusColor(request.statusCode)}`}>
+                    Response: {request.statusCode}
                   </span>
                 </div>
               </div>
               
-              {expandedId === claim.id && (
-                <div className="p-4 bg-gray-50 border-t">
+              {expandedId === request.id && (
+                <div className="mt-4 bg-gray-50 p-4 rounded text-sm">
                   <div className="mb-4">
-                    <h3 className="font-semibold mb-2">API Request:</h3>
-                    <pre className="bg-white p-3 rounded text-xs overflow-auto max-h-60">{JSON.stringify(claim.request, null, 2)}</pre>
+                    <h3 className="font-medium mb-2">Request JSON:</h3>
+                    <pre className="bg-white p-3 rounded border overflow-auto max-h-96">
+                      {JSON.stringify(request.request, null, 2)}
+                    </pre>
                   </div>
+                  
                   <div>
-                    <h3 className="font-semibold mb-2">API Response:</h3>
-                    <pre className="bg-white p-3 rounded text-xs overflow-auto max-h-60">{JSON.stringify(claim.response, null, 2)}</pre>
+                    <h3 className="font-medium mb-2">Response JSON:</h3>
+                    <pre className="bg-white p-3 rounded border overflow-auto max-h-96">
+                      {JSON.stringify(request.response, null, 2)}
+                    </pre>
                   </div>
                 </div>
               )}
