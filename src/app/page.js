@@ -4,87 +4,85 @@ import { useState, useEffect } from 'react';
 import { sampleRequests } from '../mockData/sampleRequests';
 
 export default function Home() {
-  const [requests, setRequests] = useState([]);
+  const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   
   useEffect(() => {
+    // Filter only POST /request claims
+    const claimRequests = sampleRequests.filter(req => 
+      req.method === 'POST' && req.endpoint === '/request');
+    
     // Simulate loading data from API
-    // Only use POST /request claims for simplicity
     setTimeout(() => {
-      const claimRequests = sampleRequests.filter(req => 
-        req.method === 'POST' && req.endpoint === '/request');
-      setRequests(claimRequests);
+      setClaims(claimRequests);
       setLoading(false);
-    }, 800);
+    }, 500);
   }, []);
   
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
   
+  // Format timestamp
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
+  
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto pt-8 pb-16 px-4">
-        <h1 className="text-2xl font-bold mb-6">Claims Queue <span className="inline-block bg-blue-500 text-white text-sm rounded-full px-2 py-0.5 ml-2">{requests.length}</span></h1>
-        
-        {loading ? (
-          <div className="text-center py-10">
-            <div className="inline-block animate-spin h-8 w-8 text-blue-500 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-            <p className="mt-2 text-gray-600">Loading claims...</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {requests.map((claim) => (
-              <div key={claim.id} className="bg-white rounded-lg shadow">
-                <div 
-                  className="flex flex-col md:flex-row md:items-center justify-between p-4 cursor-pointer"
-                  onClick={() => toggleExpand(claim.id)}
-                >
-                  <div className="mb-2 md:mb-0">
-                    <div className="font-medium">{claim.request.request.custom_fields?.bank_account?.holder || 'Unknown'}</div>
-                    <div className="text-sm text-gray-500">{claim.request.request_id}</div>
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Claims Queue {claims.length > 0 && <span className="inline-flex items-center justify-center bg-blue-500 text-white text-xs font-medium rounded-full h-5 w-5 ml-2">{claims.length}</span>}</h1>
+      
+      {loading ? (
+        <div className="text-center py-10">
+          <p>Loading claims...</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {claims.map(claim => (
+            <div key={claim.id} className="border rounded-lg overflow-hidden">
+              <div 
+                className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() => toggleExpand(claim.id)}
+              >
+                <div>
+                  <div className="font-medium">{claim.request.request?.policy_id || 'Unknown Policy'}</div>
+                  <div className="text-sm text-gray-500">{claim.request.request_id || 'Unknown ID'}</div>
+                </div>
+                <div>
+                  <div className="font-medium">{claim.request.request_type || 'Unknown Type'}</div>
+                  <div className="text-sm text-gray-500">{formatDate(claim.timestamp)}</div>
+                </div>
+                <div>
+                  <div className="font-medium">${claim.request.request?.custom_fields?.hospitalization?.is_hospitalization ? '1,200.00' : '600.00'}</div>
+                  <div className="text-sm text-gray-500">Amount</div>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-2 py-1 rounded text-sm ${
+                    claim.statusCode >= 200 && claim.statusCode < 300 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    Response: {claim.statusCode}
+                  </span>
+                </div>
+              </div>
+              
+              {expandedId === claim.id && (
+                <div className="p-4 bg-gray-50 border-t">
+                  <div className="mb-4">
+                    <h3 className="font-semibold mb-2">API Request:</h3>
+                    <pre className="bg-white p-3 rounded text-xs overflow-auto max-h-60">{JSON.stringify(claim.request, null, 2)}</pre>
                   </div>
-                  
-                  <div className="mb-2 md:mb-0">
-                    <div className="font-medium">Type</div>
-                    <div className="text-sm text-gray-500">{claim.request.request_type === 'reimbursement' ? 'OPD Claim' : claim.request.request_type}</div>
-                  </div>
-                  
-                  <div className="mb-2 md:mb-0">
-                    <div className="font-medium">${parseFloat(claim.request.request.custom_fields?.invoice_amount || '500.00').toFixed(2)}</div>
-                    <div className="text-sm text-gray-500">Below Deductible Amount</div>
-                  </div>
-                  
                   <div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
-                      <svg className="mr-1.5 h-2 w-2 text-blue-400" fill="currentColor" viewBox="0 0 8 8">
-                        <circle cx="4" cy="4" r="3" />
-                      </svg>
-                      Pending
-                    </span>
+                    <h3 className="font-semibold mb-2">API Response:</h3>
+                    <pre className="bg-white p-3 rounded text-xs overflow-auto max-h-60">{JSON.stringify(claim.response, null, 2)}</pre>
                   </div>
                 </div>
-                
-                {expandedId === claim.id && (
-                  <div className="border-t border-gray-200 p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-lg font-medium mb-2">Request</h3>
-                        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-96">{JSON.stringify(claim.request, null, 2)}</pre>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-medium mb-2">Response</h3>
-                        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-96">{JSON.stringify(claim.response, null, 2)}</pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
